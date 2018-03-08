@@ -26,8 +26,11 @@ var brickPadding = 10
 var brickOffsetTop = 30
 var brickOffsetLeft = 30
 
+var score = 0
+
 document.addEventListener("keydown", keyDownHandler, false)
 document.addEventListener("keyup", keyUpHandler, false)
+document.getElementById("hider").style.visibility = "hidden"
 
 // brick array
 var bricks = []
@@ -36,6 +39,11 @@ for(col = 0; col < brickColumnCount; col++) {
   for(row = 0; row < brickRowCount; row++) {
     bricks[col][row] = { x: 0, y: 0, status: 1 }
   }
+}
+
+var drawScore = () => {
+  ctx.font  = "16px Arial"
+  ctx.fillText("Score: " + score, 8, 20)
 }
 
 // draw bricks
@@ -65,7 +73,14 @@ var collisionDetector = () => {
         if(x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
           dy = -dy
           b.status = 0
+          score++
           randColor()
+          if(score == brickColumnCount * brickRowCount) {
+            // end game functions
+            document.getElementById("hider").style.visibility = "visible"
+            document.getElementById("result").innerHTML = `Final Score: ${score}`
+            // stop game?
+          }
         }
       }
     }
@@ -92,6 +107,7 @@ var draw = () => {
   drawBricks()
   drawBall()
   drawPaddle()
+  drawScore()
   collisionDetector()
   x += dx
   y += dy
