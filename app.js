@@ -7,8 +7,9 @@ var ballRadius = 10
 var x = canvas.width/2
 var y = canvas.height-30
 // speed and direction of ball
-var dx = 2
-var dy = -2
+var speedNum = 3
+var dx = speedNum
+var dy = -speedNum
 // paddle dimensions
 var paddelHeight = 10
 var paddleWidth = 75
@@ -27,10 +28,12 @@ var brickOffsetTop = 30
 var brickOffsetLeft = 30
 
 var score = 0
+var lives = 3
 
 document.addEventListener("keydown", keyDownHandler, false)
 document.addEventListener("keyup", keyUpHandler, false)
 document.getElementById("hider").style.visibility = "hidden"
+document.addEventListener("mousemove", mouseMoveHandler, false)
 
 // brick array
 var bricks = []
@@ -44,6 +47,22 @@ for(col = 0; col < brickColumnCount; col++) {
 var drawScore = () => {
   ctx.font  = "16px Arial"
   ctx.fillText("Score: " + score, 8, 20)
+}
+
+// draw ball
+var drawBall = () => {
+  ctx.beginPath()
+  ctx.arc(x, y, ballRadius, 0, Math.PI*2)
+  ctx.fill()
+  ctx.closePath()
+}
+
+// draw paddle
+var drawPaddle = () => {
+  ctx.beginPath()
+  ctx.rect(paddleX, canvas.height - paddelHeight, paddleWidth, paddelHeight)
+  ctx.fill()
+  ctx.closePath()
 }
 
 // draw bricks
@@ -64,6 +83,17 @@ var drawBricks = () => {
   }
 }
 
+var drawLives = () => {
+  ctx.font = "16px Arial"
+  ctx.fillText("Lives: " + lives, canvas.width - 65, 20)
+}
+
+// change to random color
+var randColor = () => {
+  ctx.fillStyle = "#"+((1<<24)*Math.random()|0).toString(16)
+  ctx.fill()
+}
+
 // collision detector
 var collisionDetector = () => {
   for(col = 0; col < brickColumnCount; col++) {
@@ -79,7 +109,7 @@ var collisionDetector = () => {
             // end game functions
             document.getElementById("hider").style.visibility = "visible"
             document.getElementById("result").innerHTML = `Final Score: ${score}`
-            // stop game?
+            draw.stop()
           }
         }
       }
@@ -87,20 +117,7 @@ var collisionDetector = () => {
   }
 }
 
-// draw ball
-var drawBall = () => {
-  ctx.beginPath()
-  ctx.arc(x, y, ballRadius, 0, Math.PI*2)
-  ctx.fill()
-  ctx.closePath()
-}
-
-// change to random color
-var randColor = () => {
-  ctx.fillStyle = "#"+((1<<24)*Math.random()|0).toString(16)
-  ctx.fill()
-}
-
+// main game engine
 var draw = () => {
   // clears ball each frame
   ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -108,6 +125,7 @@ var draw = () => {
   drawBall()
   drawPaddle()
   drawScore()
+  drawLives()
   collisionDetector()
   x += dx
   y += dy
@@ -120,49 +138,60 @@ var draw = () => {
     dy = -dy;
     randColor()
   } else if(y + dy > canvas.height-ballRadius) {
-      if(x > paddleX && x < paddleX + paddleWidth) {
-        dy = -dy;
-        randColor()
-      }
-      // end game
-      else {
+    if(x > paddleX && x < paddleX + paddleWidth) {
+      dy = -dy;
+      randColor()
+    }
+    // end game
+    else {
+      lives--
+      if(!lives) {
         document.location.reload()
+        document.getElementById("hider").style.visibility = "visible"
+        document.getElementById("result").innerHTML = `Final Score: ${score}`
+      } else {
+        x = canvas.width / 2
+        y = canvas.height - 30
+        dx = speedNum
+        dy = -speedNum
+        paddleX = (canvas.width - paddleWidth) / 2
       }
+    }
   }
   // paddle mover
   if(rightPressed && paddleX < canvas.width-paddleWidth) {
     paddleX += 7
   }
   else if(leftPressed && paddleX > 0) {
-      paddleX -= 7
+    paddleX -= 7
+  }
+  requestAnimationFrame(draw)
+}
+
+// mouse controls paddle
+function mouseMoveHandler(e) {
+  var relativeX = e.clientX - canvas.offsetLeft
+  if(relativeX > 0 && relativeX < canvas.width) {
+    paddleX = relativeX - paddleWidth/2
   }
 }
 
-// draw paddle
-var drawPaddle = () => {
-  ctx.beginPath()
-  ctx.rect(paddleX, canvas.height - paddelHeight, paddleWidth, paddelHeight)
-  ctx.fill()
-  ctx.closePath()
-}
-
+// left & right arrow control paddle
 function keyDownHandler(e) {
   if(e.keyCode == 39) {
-      rightPressed = true
+    rightPressed = true
   }
   else if(e.keyCode == 37) {
-      leftPressed = true
+    leftPressed = true
   }
 }
 function keyUpHandler(e) {
   if(e.keyCode == 39) {
-      rightPressed = false
+    rightPressed = false
   }
   else if(e.keyCode == 37) {
-      leftPressed = false
+    leftPressed = false
   }
 }
 
-// run every 10 miliseconds
-// smaller = faster frame refresh
-setInterval(draw, 10)
+draw()
