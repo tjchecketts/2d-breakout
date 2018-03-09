@@ -7,7 +7,8 @@ var ballRadius = 10
 var x = canvas.width/2
 var y = canvas.height-30
 // speed and direction of ball
-var speedNum = 3
+// default speed ~3
+var speedNum = 3.3
 var dx = speedNum
 var dy = -speedNum
 // paddle dimensions
@@ -30,9 +31,9 @@ var brickOffsetLeft = 30
 var score = 0
 var lives = 3
 
+var result = document.getElementById("result")
 document.addEventListener("keydown", keyDownHandler, false)
 document.addEventListener("keyup", keyUpHandler, false)
-document.getElementById("hider").style.visibility = "hidden"
 document.addEventListener("mousemove", mouseMoveHandler, false)
 
 // brick array
@@ -107,8 +108,7 @@ var collisionDetector = () => {
           randColor()
           if(score == brickColumnCount * brickRowCount) {
             // end game functions
-            document.getElementById("hider").style.visibility = "visible"
-            document.getElementById("result").innerHTML = `Final Score: ${score}`
+            result.innerHTML = `Final Score: ${score}`
             draw.stop()
           }
         }
@@ -147,7 +147,6 @@ var draw = () => {
       lives--
       if(!lives) {
         document.location.reload()
-        document.getElementById("hider").style.visibility = "visible"
         document.getElementById("result").innerHTML = `Final Score: ${score}`
       } else {
         x = canvas.width / 2
