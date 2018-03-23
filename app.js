@@ -32,6 +32,7 @@ var score = 0
 var lives = 3
 
 var result = document.getElementById("result")
+var life = document.getElementById("life")
 document.addEventListener("keydown", keyDownHandler, false)
 document.addEventListener("keyup", keyUpHandler, false)
 document.addEventListener("mousemove", mouseMoveHandler, false)
@@ -43,11 +44,6 @@ for(col = 0; col < brickColumnCount; col++) {
   for(row = 0; row < brickRowCount; row++) {
     bricks[col][row] = { x: 0, y: 0, status: 1 }
   }
-}
-
-var drawScore = () => {
-  ctx.font  = "16px Arial"
-  ctx.fillText("Score: " + score, 8, 20)
 }
 
 // draw ball
@@ -84,11 +80,6 @@ var drawBricks = () => {
   }
 }
 
-var drawLives = () => {
-  ctx.font = "16px Arial"
-  ctx.fillText("Lives: " + lives, canvas.width - 65, 20)
-}
-
 // change to random color
 var randColor = () => {
   ctx.fillStyle = "#"+((1<<24)*Math.random()|0).toString(16)
@@ -104,11 +95,10 @@ var collisionDetector = () => {
         if(x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
           dy = -dy
           b.status = 0
-          score++
+          result.innerHTML = `Score: ${++score}`
           randColor()
           if(score == brickColumnCount * brickRowCount) {
             // end game functions
-            result.innerHTML = `Final Score: ${score}`
             draw.stop()
           }
         }
@@ -124,8 +114,6 @@ var draw = () => {
   drawBricks()
   drawBall()
   drawPaddle()
-  drawScore()
-  drawLives()
   collisionDetector()
   x += dx
   y += dy
@@ -144,10 +132,9 @@ var draw = () => {
     }
     // end game
     else {
-      lives--
+      life.innerHTML = `Lives: ${--lives}`
       if(!lives) {
-        document.location.reload()
-        document.getElementById("result").innerHTML = `Final Score: ${score}`
+        draw.stop()
       } else {
         x = canvas.width / 2
         y = canvas.height - 30
